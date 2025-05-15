@@ -3,79 +3,117 @@ package com.programa_costos.view;
 import com.programa_costos.service.CalculadoraTiempos;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class VentanaPrincipal extends JFrame {
 
-    private JTextField txtLargo, txtAncho, txtGrueso, txtNumPiezas, txtGruesoTotal, txtNumCapas, txtProfundidad;
-    private JTextArea txtResultado;
+	private JTextField largoField, anchoField, altoField, numPiezasField, gruesoTotalField, profundidadField,
+			numCapasField;
+	private JTextArea resultadoArea;
 
-    public VentanaPrincipal() {
-        setTitle("Calculadora de Tiempos de Producción");
-        setSize(400, 450);
-        setLayout(null);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
+	public VentanaPrincipal() {
+		setTitle("Tiempo Estimado de Preparación");
+		setSize(800, 600);
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLocationRelativeTo(null);
 
-        JLabel[] etiquetas = {
-            new JLabel("Largo (cm):"),
-            new JLabel("Ancho (cm):"),
-            new JLabel("Grueso (cm):"),
-            new JLabel("Número de piezas:"),
-            new JLabel("Grueso total del molde (cm):"),
-            new JLabel("Número de capas:"),
-            new JLabel("Profundidad máxima (cm):")
-        };
+		JPanel panel = new JPanel();
+		panel.setLayout(null);
+		panel.setBackground(new Color(240, 240, 240));
+		add(panel);
 
-        JTextField[] campos = {
-            txtLargo = new JTextField(),
-            txtAncho = new JTextField(),
-            txtGrueso = new JTextField(),
-            txtNumPiezas = new JTextField(),
-            txtGruesoTotal = new JTextField(),
-            txtNumCapas = new JTextField(),
-            txtProfundidad = new JTextField()
-        };
+		JLabel titulo = new JLabel("TIEMPO ESTIMADO DE PREPARACION");
+		titulo.setFont(new Font("SansSerif", Font.BOLD, 20));
+		titulo.setForeground(new Color(0, 180, 180));
+		titulo.setBounds(30, 20, 500, 30);
+		panel.add(titulo);
 
-        for (int i = 0; i < etiquetas.length; i++) {
-            etiquetas[i].setBounds(20, 20 + i * 40, 200, 25);
-            campos[i].setBounds(220, 20 + i * 40, 120, 25);
-            add(etiquetas[i]);
-            add(campos[i]);
-        }
+		ImageIcon logoIcon = new ImageIcon("src/img/logo.png");
+		JLabel logo = new JLabel(logoIcon);
+		logo.setBounds(650, 10, 120, 60);
+		panel.add(logo);
 
-        JButton btnCalcular = new JButton("Calcular tiempos");
-        btnCalcular.setBounds(120, 310, 150, 30);
-        btnCalcular.addActionListener(this::calcular);
-        add(btnCalcular);
+		// Campos de entrada
+		largoField = crearCampo(panel, "Largo:", 30, 70);
+		anchoField = crearCampo(panel, "Ancho:", 280, 70);
+		altoField = crearCampo(panel, "Alto:", 530, 70);
 
-        txtResultado = new JTextArea();
-        txtResultado.setBounds(20, 350, 340, 60);
-        txtResultado.setEditable(false);
-        add(txtResultado);
-    }
+		numPiezasField = crearCampo(panel, "Num Piezas:", 30, 130);
+		gruesoTotalField = crearCampo(panel, "Grueso total:", 280, 130);
+		profundidadField = crearCampo(panel, "Profundidad de mecanizado:", 530, 130);
 
-    private void calcular(ActionEvent e) {
-        try {
-            int largo = Integer.parseInt(txtLargo.getText());
-            int ancho = Integer.parseInt(txtAncho.getText());
-            int grueso = Integer.parseInt(txtGrueso.getText());
-            int numPiezas = Integer.parseInt(txtNumPiezas.getText());
-            int gruesoTotal = Integer.parseInt(txtGruesoTotal.getText());
-            int numCapas = Integer.parseInt(txtNumCapas.getText());
-            int profundidad = Integer.parseInt(txtProfundidad.getText());
+		numCapasField = crearCampo(panel, "Número de capas:", 30, 190);
 
-            int tiempoPreparacion = CalculadoraTiempos.calcularTiempoPreparacion(largo, ancho, grueso, numPiezas);
-            int tiempoMecanizado = CalculadoraTiempos.calcularTiempoMecanizado(largo, ancho, grueso, numPiezas);
-            int tiempoPegado = CalculadoraTiempos.calcularTiempoPegado(numCapas);
+		// Botón
+		JButton calcularBtn = new JButton("CALCULAR TIEMPO");
+		calcularBtn.setBackground(new Color(0, 180, 180));
+		calcularBtn.setForeground(Color.BLACK);
+		calcularBtn.setFont(new Font("SansSerif", Font.BOLD, 14));
+		calcularBtn.setBounds(30, 250, 180, 40);
+		panel.add(calcularBtn);
 
-            txtResultado.setText(
-                "Tiempo de preparación de máquina: " + tiempoPreparacion + " minutos\n" +
-                "Tiempo de mecanizado: " + tiempoMecanizado + " minutos\n" +
-                "Tiempo de pegado total: " + tiempoPegado + " minutos"
-            );
+		// Área de resultados
+		resultadoArea = new JTextArea();
+		resultadoArea.setEditable(false);
+		resultadoArea.setFont(new Font("SansSerif", Font.PLAIN, 14));
+		resultadoArea.setBackground(Color.DARK_GRAY);
+		resultadoArea.setForeground(Color.WHITE);
 
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Por favor ingresa solo números válidos en todos los campos.");
-        }
-    }
+		JScrollPane scrollPane = new JScrollPane(resultadoArea);
+		scrollPane.setBounds(30, 310, 720, 180);
+		panel.add(scrollPane);
+
+		calcularBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				calcularTiempos();
+			}
+		});
+	}
+
+	private JTextField crearCampo(JPanel panel, String texto, int x, int y) {
+		JLabel label = new JLabel(texto);
+		label.setBounds(x, y, 200, 25);
+		panel.add(label);
+
+		JTextField campo = new JTextField();
+		campo.setBounds(x, y + 25, 200, 30);
+		panel.add(campo);
+
+		return campo;
+	}
+
+	private void calcularTiempos() {
+		try {
+			int largo = Integer.parseInt(largoField.getText());
+			int ancho = Integer.parseInt(anchoField.getText());
+			int grueso = Integer.parseInt(altoField.getText());
+			int numPiezas = Integer.parseInt(numPiezasField.getText());
+			int gruesoTotal = Integer.parseInt(gruesoTotalField.getText());
+			int profundidad = Integer.parseInt(profundidadField.getText());
+			int numCapas = Integer.parseInt(numCapasField.getText());
+
+			int tiempoPreparacion = CalculadoraTiempos.calcularTiempoPreparacion(largo, ancho, grueso, numPiezas);
+			int tiempoMecanizado = CalculadoraTiempos.calcularTiempoMecanizado(largo, ancho, grueso, numPiezas);
+			int tiempoPegado = CalculadoraTiempos.calcularTiempoPegado(numCapas);
+			int total = tiempoPreparacion + tiempoMecanizado + tiempoPegado;
+
+			resultadoArea.setText(
+					"Preparación de máquina: " + tiempoPreparacion + " min\n" +
+							"Mecanizado: " + tiempoMecanizado + " min\n" +
+							"Pegado total: " + tiempoPegado + " min\n\n" +
+							"Tiempo total: " + total + " min");
+		} catch (NumberFormatException ex) {
+			JOptionPane.showMessageDialog(this, "Por favor, introduce todos los valores numéricos correctamente.",
+					"Error", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	public static void main(String[] args) {
+		SwingUtilities.invokeLater(() -> {
+			new VentanaPrincipal().setVisible(true);
+		});
+	}
 }
